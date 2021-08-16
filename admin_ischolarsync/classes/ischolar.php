@@ -17,9 +17,10 @@
 /**
  * Integração do sistemas iScholar.
  *
- * @package    auth_ischolar
- * @copyright  2021 iScholar
- * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   tool_ischolarsync
+ * @category  admin tools
+ * @copyright 2021, iScholar - Gestão Escolar
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace tool_ischolarsync;
 
@@ -52,7 +53,7 @@ class ischolar {
     /**
      * Performs the configuration in the plugin and in the iScholar system.
      *
-     * @return array An array containing the status of configuration.
+     * @return bool true if configuration is ok, false if something fails.
      */
     public static function setintegration(): bool {
         global $CFG;
@@ -272,14 +273,35 @@ class ischolar {
      * @return array A array indicating the status e error message if any.
      */
     public static function unsetintegration() {
+        global $CFG;
         
+        try {
+            //
+            // Desativando integração no iScholar
+            //
+            
+            $response = self::callischolar("desativa_moodle_sync");
+
+            if (isset($result['status']) && $result['status'] == 'sucesso')
+                $result['status'] = true;
+            else 
+                $result['status'] = false;
+        } 
+        catch (\Exception $e) {
+            $result = [
+                'status' => false,
+                'msg'    => $e->getMessage()
+            ];
+        }
+        
+        return $result;
     }
 
 
     /**
      * Check plugin configuration status.
      *
-     * @return array An array containing the status of each verified configuration.
+     * @return string html code listing the configuration status itens.
      */
     public static function healthcheck() {
         global $CFG, $OUTPUT;
@@ -421,7 +443,7 @@ class ischolar {
                 'token_moodle' => $tokenmoodle,
                 'url_moodle'   => $CFG->wwwroot . "/webservice/rest/server.php"
             ];
-            $response = self::callischolar("configura_moodle_auth", $payload);
+            $response = self::callischolar("configura_moodle_sync", $payload);
 
             $results[10]['desc'] = 'servicetest';
             if (isset($response['status']) && $response['status'] == 'sucesso') {

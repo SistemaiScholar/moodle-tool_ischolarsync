@@ -97,7 +97,7 @@ if ($hassiteconfig) {
         // Se o usuário clicou no botão de salvar configurações
         if ($data = data_submitted() and confirm_sesskey() and 
                 isset($data->action) and $data->action == 'save-settings') {
-            if ($data->s_auth_ischolar_enabled == '1')
+            if ($data->s_tool_ischolarsync_enabled == '1')
                 ischolar::setintegration();
             else
                 ischolar::unsetintegration();
