@@ -54,8 +54,9 @@ $string['config:webservicedocs'] = 'Configuração de documentações no Moodle.
 $string['config:servicetest'] = 'Configuração no sistema iScholar.';
 $string['config:servicetestfail'] = 'Falha na comunicação com o iScholar.';
 $string['config:manageauth'] = 'Ativação do método de autenticação.';
+$string['config:customfields'] = 'Campos customizados.';
 $string['config:plugindisabled'] = 'Plugin desativado.';
-//$string['config:exception'] = 'Exceção.';
+$string['config:exception'] = 'Exceção.';
 
 $string['configerror:general'] = 'Falha na comunicação com o iScholar:';
 $string['configerror:communication'] = 'O iScholar não conseguiu estabelecer comunicação com o Moodle.';
@@ -65,3 +66,6 @@ $string['configerror:escoladesconhecida'] = 'A escola associada ao Token do iSch
 $string['configerror:integracaodesconhecida'] = 'A integração associada ao Token do iScholar fornecido é desconhecida.';
 $string['configerror:tokennaoencontrado'] = 'Token do iScholar não encontrado.';
 $string['configerror:fixbutton'] = 'Corrigir configurações';
+
+$string['customfield:idaluno'] = 'ID do aluno no iScholar';
+$string['customfield:idprofessor'] = 'ID do professor no iScholar';

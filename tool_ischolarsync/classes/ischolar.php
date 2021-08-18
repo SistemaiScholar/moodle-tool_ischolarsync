@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Integração do sistemas iScholar.
+ * Provide functions to integrate with an iScholar System.
  *
  * @package   tool_ischolarsync
  * @category  admin tools
@@ -35,7 +35,14 @@ class ischolar {
     const SERVICE_ID        = 'ischolarsync';
     const SETTINGS_PAGE     = 'settingsischolarsync';
     const SERVICE_FUNCTIONS = [
-        'core_course_get_categories',           // Return category details
+        'core_course_get_categories',           // Return category details (Also used on ischolar::ping).
+        'core_user_get_users_by_field',         // Retrieve users' information for a specified unique field - If you want to do a user search, use core_user_get_users() or core_user_search_identity().
+        'core_user_create_users',               // Create users.
+    ];
+
+    const CUSTOM_FIELDS = [
+        'idaluno',
+        'idprofessor'
     ];
 
     /**
@@ -56,8 +63,11 @@ class ischolar {
      * @return bool true if configuration is ok, false if something fails.
      */
     public static function setintegration(): bool {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot . '/user/externallib.php');
+        require_once($CFG->dirroot . '/user/profile/definelib.php');
+        require_once($CFG->dirroot . '/user/profile/lib.php');
+
         
         // Seguindo os passos descritos em 'Dashboard / Site administration / Server / Web services / Overview'
         try {
@@ -222,22 +232,29 @@ class ischolar {
             
             
             //
-            // 8. Cria um token para o usuário
+            // 8. Cria um token de serviço para o usuário
             //
             $ischolaruser = \core_user_external::get_users_by_field('username', ['ischolar']);
             $tokens       = $wsman->get_user_ws_tokens($ischolaruser[0]['id']);
+
+            // procura token do serviço para o usuário
+            $found = false;
+            foreach($tokens as $token) {
+                if ($token->name == self::SERVICE_NAME && $token->enabled == '1') {
+                    $found       = true;
+                    $tokenmoodle = $token->token;       // Se token já existe, guarda pra depois
+                    break;
+                }
+            }
+
             // Se token não existe, será criado
-            if (count($tokens) == 0) {      
+            if (!$found) {
                 $tokenmoodle = external_generate_token(
                     EXTERNAL_TOKEN_PERMANENT, 
                     $serviceid, 
                     $ischolaruser[0]['id'], 
                     \context_system::instance()
                 );
-            }
-            // Se token existe, apenas busca o token
-            else {                          
-                $tokenmoodle = end($tokens)->token;
             }
             
             
@@ -258,6 +275,44 @@ class ischolar {
 
             if (isset($response['status']) && $response['status'] == 'sucesso')
                 set_config('schoolcode', $response['dados']['escola'], self::PLUGIN_ID);
+
+            
+            //
+            // 11. Custom fields
+            //
+            $categories = $DB->get_records('user_info_category', ['name' => 'iScholar']);
+            if (count($categories) == 0) {
+                // Cria categoria iScholar para custom fields
+                
+                $data            = new \stdClass();
+                $data->name      = 'iScholar';
+                $data->sortorder = (int) $DB->get_field_sql('SELECT MAX(sortorder) FROM {user_info_category}') + 1;
+                profile_save_category($data);
+            }
+            $idcategory = $DB->get_record('user_info_category', ['name' => 'iScholar']);
+
+            foreach (self::CUSTOM_FIELDS as $customfield) {
+                $field = $DB->get_records('user_info_field', ['shortname' => $customfield]);
+
+                if (empty($field)) {
+                    $data                    = new \stdClass();
+                    $data->shortname         = $customfield;
+                    $data->name              = new \lang_string('customfield:'.$customfield, self::PLUGIN_ID);
+                    $data->datatype          = 'text';
+                    $data->description       = new \lang_string('customfield:'.$customfield, self::PLUGIN_ID);
+                    $data->categoryid        = $idcategory;
+                    $data->required          = 0;
+                    $data->locked            = 1;
+                    $data->visible           = 2;
+                    $data->forceunique       = 0;
+                    $data->signup            = 0;
+                    $data->param1            = 30;
+                    $data->param2            = 2048;
+
+                    $field = new \profile_define_base();
+                    $field->define_save($data);
+                }
+            }
         } 
         catch (\Exception $e) {
             return false;
@@ -304,7 +359,7 @@ class ischolar {
      * @return string html code listing the configuration status itens.
      */
     public static function healthcheck() {
-        global $CFG, $OUTPUT;
+        global $CFG, $OUTPUT, $DB;
         require_once($CFG->dirroot . '/user/externallib.php');
         require_once($CFG->dirroot . '/webservice/lib.php');
 
@@ -318,7 +373,7 @@ class ischolar {
             // 0. Ativação do plugin
             //
             $results[0]['desc'] = 'pluginenabled';
-            if ($config->enabled == '1')
+            if (isset($config->enabled) && $config->enabled == '1')
                 $results[0]['status'] = true;
             else
                 $results[0]['status'] = false;
@@ -416,16 +471,19 @@ class ischolar {
             }
 
             //
-            // 8. Token para o usuário iScholar
+            // 8. Token do serviço para o usuário iScholar
             //
             $results[8]['desc'] = 'createtoken';
             $tokens = $wsman->get_user_ws_tokens($ischolaruserid);
-            if (count($tokens) > 0) {
-                $results[8]['status'] = true;
-                $tokenmoodle = end($tokens)->token;
+
+            $results[8]['status'] = false;
+            foreach ($tokens as $token) {
+                if ($token->name == self::SERVICE_NAME && $token->enabled == 1) {
+                    $results[8]['status'] = true;
+                    $tokenmoodle = $token->token;
+                    break;
+                }
             }
-            else
-                $results[8]['status'] = false;
 
             //
             // 9. Ativando Web services documentation (documentação de desenvolvedor)
@@ -441,7 +499,7 @@ class ischolar {
             //
             $payload = [
                 'token_moodle' => $tokenmoodle,
-                'url_moodle'   => $CFG->wwwroot . "/webservice/rest/server.php"
+                'url_moodle'   => $CFG->wwwroot
             ];
             $response = self::callischolar("configura_moodle_sync", $payload);
 
@@ -451,8 +509,28 @@ class ischolar {
                 set_config('schoolcode', $response['dados']['escola'], self::PLUGIN_ID);
             }
             else {
-                $results[10]['status']= false;
+                $results[10]['status'] = false;
                 $results[10]['msg'] = (isset($response['msg'])) ? $response['msg'] : get_string('config:servicetestfail', ischolar::PLUGIN_ID);
+            }
+
+            //
+            // 11. Custom fields
+            //
+            $results[11]['desc']   = 'customfields';
+            $results[11]['status'] = true;
+
+            $categories = $DB->get_records('user_info_category', ['name'=>'iScholar']);
+            if (count($categories) == 0) {
+                $results[11]['status'] = false;
+            }
+            else {
+                foreach (self::CUSTOM_FIELDS as $customfield) {
+                    $field = $DB->get_records('user_info_field', ['shortname' => $customfield]);
+                    if (count($field) == 0) {
+                        $results[11]['status'] = false;
+                        break;
+                    }
+                }
             }
         }
         catch(\Exception $e) {
