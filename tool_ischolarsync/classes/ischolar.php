@@ -290,6 +290,7 @@ class ischolar {
                 profile_save_category($data);
             }
             $idcategory = $DB->get_record('user_info_category', ['name' => 'iScholar']);
+            $idcategory = $idcategory->id;
 
             foreach (self::CUSTOM_FIELDS as $customfield) {
                 $field = $DB->get_records('user_info_field', ['shortname' => $customfield]);
@@ -297,15 +298,15 @@ class ischolar {
                 if (empty($field)) {
                     $data                    = new \stdClass();
                     $data->shortname         = $customfield;
-                    $data->name              = new \lang_string('customfield:'.$customfield, self::PLUGIN_ID);
+                    $data->name              = get_string('customfield:'.$customfield, self::PLUGIN_ID);
                     $data->datatype          = 'text';
-                    $data->description       = new \lang_string('customfield:'.$customfield, self::PLUGIN_ID);
+                    $data->description       = get_string('customfield:'.$customfield, self::PLUGIN_ID);
                     $data->categoryid        = $idcategory;
-                    $data->required          = 0;
-                    $data->locked            = 1;
-                    $data->visible           = 2;
-                    $data->forceunique       = 0;
-                    $data->signup            = 0;
+                    $data->required          = false;
+                    $data->locked            = true;
+                    $data->visible           = '2';
+                    $data->forceunique       = false;
+                    $data->signup            = false;
                     $data->param1            = 30;
                     $data->param2            = 2048;
 
