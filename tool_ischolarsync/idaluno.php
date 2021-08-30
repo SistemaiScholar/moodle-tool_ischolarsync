@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version file
+ * Manage ischolar custom fields
  *
  * @package   tool_ischolarsync
  * @category  admin tools
@@ -23,10 +23,16 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+require_once('../config.php');
+require_once($CFG->libdir.'/adminlib.php');
 
-$plugin->component    = "tool_ischolarsync";    // Tipo_nome.
-$plugin->release      = "1.0.0";                // Versão do plugin em formato legível.
-$plugin->version      = 2021081600;             // Versão do plugin em formato data+contador.
-$plugin->maturity     = MATURITY_ALPHA;         // MATURITY_ALPHA, MATURITY_BETA, MATURITY_RC or MATURITY_STABLE.
-$plugin->dependencies = [];                     // Dependências.
+admin_externalpage_setup('course_customfield');
+
+$output     = $PAGE->get_renderer('core_customfield');
+$handler    = core_course\customfield\course_handler::create();
+$outputpage = new \core_customfield\output\management($handler);
+
+echo $output->header(),
+    $output->heading('iScholar Custom field'),
+    $output->render($outputpage),
+    $output->footer();

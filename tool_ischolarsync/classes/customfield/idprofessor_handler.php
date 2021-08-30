@@ -31,14 +31,14 @@ use core_customfield\api;
 use core_customfield\field_controller;
 
 /**
- * id_aluno on iScholar system
+ * id_professor on iScholar system
  *
  * @package   tool_ischolarsync
  * @category  admin tools
  * @copyright 2021, iScholar - Gestão Escolar
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class idaluno_handler extends \core_customfield\handler {
+class idprofessor_handler extends \core_customfield\handler {
     static protected $singleton;
 
     /**
@@ -60,7 +60,7 @@ class idaluno_handler extends \core_customfield\handler {
      * @return bool true if the current user can configure custom fields, false otherwise.
      */
     public function can_configure(): bool {
-        return true;
+        return false;
     }
 
     /**
@@ -73,7 +73,7 @@ class idaluno_handler extends \core_customfield\handler {
      * @return bool true if the current user can edit custom fields, false otherwise.
      */
     public function can_edit(field_controller $field, int $instanceid=0): bool {
-        return true;
+        return false;
     }
 
     /**
@@ -87,6 +87,6 @@ class idaluno_handler extends \core_customfield\handler {
      * @return bool true if the current user can edit custom fields, false otherwise
      */
     public function can_view(field_controller $field, int $instanceid) : bool {
-        return true;
+        return false;
     }
 }
