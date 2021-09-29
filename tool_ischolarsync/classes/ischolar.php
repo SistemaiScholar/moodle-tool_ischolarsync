@@ -35,17 +35,26 @@ class ischolar {
     const SERVICE_ID        = 'ischolarsync';
     const SETTINGS_PAGE     = 'settingsischolarsync';
     const SERVICE_FUNCTIONS = [
-        'core_course_get_categories',           // Return category details (Also used on ischolar::ping).
-        'core_user_create_users',               // Create users.
-        'core_user_update_users',               // Update users.
-        'core_user_delete_users',               // Delete users.
-        'core_user_get_users_by_field',         // Retrieve users' information for a specified unique field.
+        'core_course_get_categories',           // Mdl v2.3 Return category details (Also used on ischolar::ping).
+        'core_user_create_users',               // Mdl v2.0 Create users.
+        'core_user_update_users',               // Mdl v2.0 Update users.
+        'core_user_get_users_by_field',         // Mdl v2.5 Retrieve users' information for a specified unique field.
+        // 'core_user_get_users',                  // Mdl v2.5 Search for users matching the parameters.
+        // 'core_course_create_courses',           // Mdl v2.0 Create new courses.
+        // 'core_course_update_courses',           // Mdl v2.5 Update courses.
+        'core_course_get_courses',              // Mdl v2.0 Return course details.
+        'enrol_manual_enrol_users',             // Mdl v2.0 Manual enrol users.
+        // 'enrol_manual_unenrol_users',           // Mdl v3.0 Manual unenrol users.
+        'core_enrol_get_enrolled_users',        // Mdl v2.1 Get enrolled users by course id.
+        // 'core_enrol_search_users',              // Mdl v3.8 Search within the list of course participants.
+        'core_enrol_get_users_courses',         // Mdl v2.0 Get the list of courses where a user is enrolled in.
     ];
 
-    const CUSTOM_FIELDS = [
-        'idaluno',
-        'idprofessor'
+    const USER_CUSTOMFIELDS = [
+        'ischolar_aluno',
+        'ischolar_professor'
     ];
+
 
     /**
      * Get the plugin configuration parameters.
@@ -196,6 +205,13 @@ class ischolar {
             //
             // 6. Adiciona funções que o usuário poderá executar.
             //
+
+            // Buscando funções e limpando funções atuais.
+            $externalfunctions = $wsman->get_external_functions([$serviceid]);
+            foreach ($externalfunctions as $function) {
+                $wsman->remove_external_function_from_service($function->name, $serviceid);
+            }
+            // Acrescentando funções necessárias.
             foreach (self::SERVICE_FUNCTIONS as $function) {
                 $wsman->add_external_function_to_service($function, $serviceid);
             }
@@ -210,7 +226,8 @@ class ischolar {
             foreach ($authusers as $user) {
                 if ($user->firstname == 'iScholar') {
                     $found = true;
-                    break;
+                } else {     // Desautoriza outros usuários que não sejam o iScholar.
+                    $wsman->remove_ws_authorised_user($user, $serviceid);
                 }
             }
             // Se não está, autoriza.
@@ -258,7 +275,7 @@ class ischolar {
             //
             $payload = [
                 'token_moodle' => $tokenmoodle,
-                'url_moodle'   => $CFG->wwwroot,
+                'url_moodle'   => $CFG->wwwroot
             ];
             $response = self::callischolar("configura_moodle_sync", $payload);
 
@@ -267,8 +284,37 @@ class ischolar {
             }
 
             //
-            // 11. Custom fields
+            // 13. Categoria de cursos
             //
+            $data                       = new \stdClass();
+            $data->parent               = '0';
+            $data->name                 = 'iScholar';
+            $data->idnumber             = '';
+            $data->description          = get_string('settings:coursecategorydesc', self::PLUGIN_ID);
+            $data->descriptionformat    = '1';
+            $data->visible              = '0';
+
+            $coursecategories = \core_course_category::get_all(['returnhidden' => true]);
+            $coursecategory   = null;
+            foreach ($coursecategories as $ccat) {
+                if ($ccat->name == 'iScholar') {
+                    $coursecategory = $ccat;
+                    break;
+                }
+            }
+
+            if ($coursecategory == null) {
+                $coursecategory = \core_course_category::create($data);
+            } else {
+                $data->id       = $coursecategory->id;
+                $coursecategory = $coursecategory->update($data);
+            }
+
+            //
+            // 12. Custom fields
+            //
+
+            // Custom fields de usuários.
             $categories = $DB->get_records('user_info_category', ['name' => 'iScholar']);
             if (count($categories) == 0) {
                 // Cria categoria iScholar para custom fields.
@@ -281,7 +327,7 @@ class ischolar {
             $idcategory = $DB->get_record('user_info_category', ['name' => 'iScholar']);
             $idcategory = $idcategory->id;
 
-            foreach (self::CUSTOM_FIELDS as $customfield) {
+            foreach (self::USER_CUSTOMFIELDS as $customfield) {
                 $field = $DB->get_records('user_info_field', ['shortname' => $customfield]);
 
                 if (empty($field)) {
@@ -293,7 +339,7 @@ class ischolar {
                     $data->categoryid        = $idcategory;
                     $data->required          = false;
                     $data->locked            = true;
-                    $data->visible           = '0';
+                    $data->visible           = '3';
                     $data->forceunique       = false;
                     $data->signup            = false;
                     $data->param1            = 30;
@@ -303,6 +349,7 @@ class ischolar {
                     $field->define_save($data);
                 }
             }
+
         } catch (\Exception $e) {
             return false;
         }
@@ -312,9 +359,9 @@ class ischolar {
 
 
     /**
-     * Disable plugin in Moodle and integration into iScholar system.
+     * Disable the plugin on Moodle and the integration on the iScholar system.
      *
-     * @return array A array indicating the status e error message if any.
+     * @return array A array indicating the status and some error message if any.
      */
     public static function unsetintegration() {
         global $CFG;
@@ -348,7 +395,7 @@ class ischolar {
      * @return string html code listing the configuration status itens.
      */
     public static function healthcheck() {
-        global $CFG, $OUTPUT, $DB;
+        global $CFG, $OUTPUT, $DB, $USER;
         require_once($CFG->dirroot . '/user/externallib.php');
         require_once($CFG->dirroot . '/webservice/lib.php');
 
@@ -493,7 +540,7 @@ class ischolar {
             //
             $payload = [
                 'token_moodle' => $tokenmoodle,
-                'url_moodle'   => $CFG->wwwroot
+                'url_moodle'   => $CFG->wwwroot,
             ];
             $response = self::callischolar("configura_moodle_sync", $payload);
 
@@ -503,29 +550,61 @@ class ischolar {
                 set_config('schoolcode', $response['dados']['escola'], self::PLUGIN_ID);
             } else {
                 $results[10]['status'] = false;
-                $results[10]['msg'] = (isset($response['msg'])) ?
+                $results[10]['msg']    = (isset($response['msg'])) ?
                                         $response['msg'] :
                                         get_string('config:servicetestfail', self::PLUGIN_ID);
             }
 
             //
-            // 11. Custom fields
+            // 11. Fuso horário.
             //
-            $results[11]['desc']   = 'customfields';
-            $results[11]['status'] = true;
+            $results[11]['desc']    = 'timezone';
+            $moodletz0              = $CFG->timezone;                               // Timezone padrão do moodle.
+            $moodletz1              = $USER->timezone;                              // Timezone do usuário moodle.
+            $ischolartz             = isset($response['dados']['time_zone']) ?
+                                      $response['dados']['time_zone'] : '';         // Timezone do iScholar.
 
+            if ($moodletz0 == $moodletz1 && $moodletz0 == $ischolartz) {
+                $results[11]['status'] = true;
+            } else {
+                $results[11]['status'] = false;
+                $results[11]['msg']    = 'timezone';
+            }
+
+            //
+            // 12. Categoria de curso
+            //
+            $results[12]['desc']   = 'coursecategory';
+            $results[12]['status'] = false;
+
+            $coursecategories = \core_course_category::get_all(['returnhidden' => true]);
+            foreach ($coursecategories as $ccat) {
+                if ($ccat->name == 'iScholar') {
+                    $results[12]['status'] = true;
+                    break;
+                }
+            }
+
+            //
+            // 13. Custom fields
+            //
+            $results[13]['desc']   = 'customfields';
+            $results[13]['status'] = true;
+
+            // Customfields de usuários.
             $categories = $DB->get_records('user_info_category', ['name' => 'iScholar']);
             if (count($categories) == 0) {
-                $results[11]['status'] = false;
+                $results[13]['status'] = false;
             } else {
-                foreach (self::CUSTOM_FIELDS as $customfield) {
+                foreach (self::USER_CUSTOMFIELDS as $customfield) {
                     $field = $DB->get_records('user_info_field', ['shortname' => $customfield]);
                     if (count($field) == 0) {
-                        $results[11]['status'] = false;
+                        $results[13]['status'] = false;
                         break;
                     }
                 }
             }
+
         } catch (\Exception $e) {
             $result[] = [
                 'desc'   => 'exception',
@@ -596,6 +675,9 @@ class ischolar {
     /**
      * Make a call to a iScholar system.
      *
+     * @param string $endpoint Endpoint to a iScholar V2 API.
+     * @param string $payload Data to send.
+     *
      * @return array A array containing the status and error messages if any.
      */
     public static function callischolar($endpoint='', $payload='') {
@@ -640,7 +722,8 @@ class ischolar {
      * Change the user logged on.
      *
      * @return object A user object.
-     */
+     * /
+    /*
     public static function setuser($user = null): object {
         global $CFG, $DB;
 
@@ -664,13 +747,14 @@ class ischolar {
 
         return $user;
     }
-
+    */
 
 
     /**
      * A small tool for debug.
      *
      * @param mixed $debug Some vabiable or content.
+     * @param string $title A description for the variable.
      */
     public static function debugbox($debug, $title = null): void {
         $debug = var_export($debug, true);
