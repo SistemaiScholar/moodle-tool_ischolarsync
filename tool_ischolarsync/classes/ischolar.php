@@ -82,12 +82,12 @@ class ischolar {
         // Seguindo os passos descritos em 'Dashboard / Site administration / Server / Web services / Overview'.
         try {
             //
-            // 1. Ativando webservice
+            // 1. Ativando webservice.
             //
             set_config('enablewebservices', 1);
 
             //
-            // 2. Ativando protocolo REST
+            // 2. Ativando protocolo REST.
             //
             if (!isset($CFG->webserviceprotocols) || $CFG->webserviceprotocols == '') {
                 set_config('webserviceprotocols', 'rest');
@@ -145,8 +145,8 @@ class ischolar {
             }
 
             //
-            // 4. Verificando capacidades do usuário
-            // Coloca o usuário ischolar no grupo de administradores
+            // 4. Verificando capacidades do usuário.
+            // Coloca o usuário ischolar no grupo de administradores.
             //
             $potentialadmisselector = new \core_role_admins_potential_selector();
             $ischolar               = $potentialadmisselector->find_users('iScholar');
@@ -244,19 +244,20 @@ class ischolar {
             //
             $ischolaruser = \core_user_external::get_users_by_field('username', ['ischolar']);
             $tokens       = $wsman->get_user_ws_tokens($ischolaruser[0]['id']);
+            $found        = false;
 
-            // Procura token do serviço para o usuário.
-            $found = false;
-            foreach ($tokens as $token) {
-                if ($token->name == self::SERVICE_NAME && $token->enabled == '1') {
-                    $found       = true;
-                    $tokenmoodle = $token->token;       // Se token já existe, guarda pra depois.
-                    break;
+            foreach ($tokens as $token) {           // Procurando token.
+                if ($token->name == 'iScholar Synchronization') {
+                    if ($token->enabled != '1') {   // Token inválida é removida.
+                        delete_user_ws_token($token->id);
+                    } else {
+                        $found       = true;
+                        $tokenmoodle = $token->token;
+                    }
                 }
             }
 
-            // Se token não existe, será criado.
-            if (!$found) {
+            if ($found == false) {                  // Se token não existe, será criado.
                 $tokenmoodle = external_generate_token(
                     EXTERNAL_TOKEN_PERMANENT,
                     $serviceid,
@@ -271,7 +272,7 @@ class ischolar {
             set_config('enablewsdocumentation', 1);
 
             //
-            // 10. Testa o serviço
+            // 10. Testa o serviço.
             //
             $payload = [
                 'token_moodle' => $tokenmoodle,
@@ -284,41 +285,13 @@ class ischolar {
             }
 
             //
-            // 13. Categoria de cursos
-            //
-            $data                       = new \stdClass();
-            $data->parent               = '0';
-            $data->name                 = 'iScholar';
-            $data->idnumber             = '';
-            $data->description          = get_string('settings:coursecategorydesc', self::PLUGIN_ID);
-            $data->descriptionformat    = '1';
-            $data->visible              = '0';
-
-            $coursecategories = \core_course_category::get_all(['returnhidden' => true]);
-            $coursecategory   = null;
-            foreach ($coursecategories as $ccat) {
-                if ($ccat->name == 'iScholar') {
-                    $coursecategory = $ccat;
-                    break;
-                }
-            }
-
-            if ($coursecategory == null) {
-                $coursecategory = \core_course_category::create($data);
-            } else {
-                $data->id       = $coursecategory->id;
-                $coursecategory = $coursecategory->update($data);
-            }
-
-            //
-            // 12. Custom fields
+            // 12. Custom fields.
             //
 
             // Custom fields de usuários.
             $categories = $DB->get_records('user_info_category', ['name' => 'iScholar']);
             if (count($categories) == 0) {
                 // Cria categoria iScholar para custom fields.
-
                 $data            = new \stdClass();
                 $data->name      = 'iScholar';
                 $data->sortorder = (int) $DB->get_field_sql('SELECT MAX(sortorder) FROM {user_info_category}') + 1;
@@ -513,12 +486,12 @@ class ischolar {
             //
             // 8. Token do serviço para o usuário iScholar
             //
-            $results[8]['desc'] = 'createtoken';
-            $tokens = $wsman->get_user_ws_tokens($ischolaruserid);
-
-            $results[8]['status'] = false;
+            $results[8]['desc']     = 'createtoken';
+            $tokens                 = $wsman->get_user_ws_tokens($ischolaruserid);
+            $results[8]['status']   = false;
+            $tokenmoodle            = '';
             foreach ($tokens as $token) {
-                if ($token->name == self::SERVICE_NAME && $token->enabled == 1) {
+                if ($token->name == 'iScholar Synchronization' && $token->enabled == '1') {
                     $results[8]['status'] = true;
                     $tokenmoodle = $token->token;
                     break;
@@ -572,34 +545,20 @@ class ischolar {
             }
 
             //
-            // 12. Categoria de curso
+            // 12. Custom fields
             //
-            $results[12]['desc']   = 'coursecategory';
-            $results[12]['status'] = false;
-
-            $coursecategories = \core_course_category::get_all(['returnhidden' => true]);
-            foreach ($coursecategories as $ccat) {
-                if ($ccat->name == 'iScholar') {
-                    $results[12]['status'] = true;
-                    break;
-                }
-            }
-
-            //
-            // 13. Custom fields
-            //
-            $results[13]['desc']   = 'customfields';
-            $results[13]['status'] = true;
+            $results[12]['desc']   = 'customfields';
+            $results[12]['status'] = true;
 
             // Customfields de usuários.
             $categories = $DB->get_records('user_info_category', ['name' => 'iScholar']);
             if (count($categories) == 0) {
-                $results[13]['status'] = false;
+                $results[12]['status'] = false;
             } else {
                 foreach (self::USER_CUSTOMFIELDS as $customfield) {
                     $field = $DB->get_records('user_info_field', ['shortname' => $customfield]);
                     if (count($field) == 0) {
-                        $results[13]['status'] = false;
+                        $results[12]['status'] = false;
                         break;
                     }
                 }
@@ -641,7 +600,7 @@ class ischolar {
                         $html .= '</p>';
                     }
 
-                    if ($result['status'] == false) {
+                    if ($result['status'] == false && $i != 10 && $i != 11) {  // Ignora checks que botão de corrigir não resolve.
                         $healthyplugin = 0;
                     }
                 }
@@ -716,38 +675,6 @@ class ischolar {
 
         return $response;
     }
-
-
-    /* *
-     * Change the user logged on.
-     *
-     * @return object A user object.
-     * /
-    /*
-    public static function setuser($user = null): object {
-        global $CFG, $DB;
-
-        if (is_object($user)) {
-            $user = clone($user);
-        } else if (!$user) {
-            $user               = new \stdClass();
-            $user->id           = 0;
-            $user->mnethostid   = $CFG->mnet_localhost_id;
-        } else {
-            $user = $DB->get_record('user', array('id' => $user));
-        }
-        unset($user->description);
-        unset($user->access);
-        unset($user->preference);
-
-        // Enusre session is empty, as it may contain caches and user specific info.
-        \core\session\manager::init_empty_session();
-
-        \core\session\manager::set_user($user);
-
-        return $user;
-    }
-    */
 
 
     /**
