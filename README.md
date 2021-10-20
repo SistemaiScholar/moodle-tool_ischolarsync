@@ -1,6 +1,6 @@
 # iScholar <> Moodle Synchronization
 
-The <strong>iScholar <> Moodle Synchronization</strong> is a Moodle plugin aimed to connect iScholar systems with Moodle.
-<br/>This plugin is focused on sending data from a iScholar system to Moodle.
+The `iScholar <> Moodle Synchronization` is a Moodle plugin aimed to connect iScholar systems with Moodle.
+<br/>This plugin is focused on sync data from theaches and students on iScholar with Moodle.
 
-The plugin comunicates with a iScholar system by using the <strong>iScholar API v2</strong>.
+For more information go to the [wiki](https://github.com/SistemaiScholar/moodle-tool_ischolarsync/wiki) page of this project.
