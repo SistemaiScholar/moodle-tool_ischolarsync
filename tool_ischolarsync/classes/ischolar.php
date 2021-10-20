@@ -48,6 +48,12 @@ class ischolar {
         'core_enrol_get_enrolled_users',        // Mdl v2.1 Get enrolled users by course id.
         // 'core_enrol_search_users',              // Mdl v3.8 Search within the list of course participants.
         'core_enrol_get_users_courses',         // Mdl v2.0 Get the list of courses where a user is enrolled in.
+        'core_group_create_groups',             // Creates new groups.
+        'core_group_get_course_user_groups',    // Returns all groups in specified course for the specified user.
+        'core_group_add_group_members',         // Adds group members.
+        'core_group_delete_group_members',      // Deletes group members.
+        'core_group_get_course_groups',         // Returns all groups in specified course.
+        // 'core_group_delete_groups',             // Deletes all specified groups.
     ];
 
     const USER_CUSTOMFIELDS = [
@@ -515,7 +521,7 @@ class ischolar {
                 'token_moodle' => $tokenmoodle,
                 'url_moodle'   => $CFG->wwwroot,
             ];
-            $response = self::callischolar("configura_moodle_sync", $payload);
+            $response = self::callischolar("verifica_moodle_sync", $payload);
 
             $results[10]['desc'] = 'servicetest';
             if (isset($response['status']) && $response['status'] == 'sucesso') {
