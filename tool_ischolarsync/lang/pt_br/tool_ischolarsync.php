@@ -21,7 +21,6 @@
  * Encoding     UTF-8
  *
  * @package   tool_ischolarsync
- * @category  admin tools
  * @copyright 2021, iScholar - Gestão Escolar
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -35,7 +34,7 @@ $string['ischolarsettings'] = 'Sincronização iScholar <> Moodle';
 $string['settings:enabled'] = 'Ativado:';
 $string['settings:enabledinfo'] = 'Ativa / desativa este plugin.';
 $string['settings:tokenischolar'] = 'Token do iScholar:';
-$string['settings:tokenischolarinfo'] = 'Token de acesso de seu sistema iScholar. Clique <a href="https://ischolar.com.br" target="_blank">aqui</a> para saber mais.';
+$string['settings:tokenischolarinfo'] = 'Token de acesso de seu sistema iScholar. Clique <a href="https://ajuda.ischolar.com.br/pt-BR/articles/5668326-sincronizacao-ischolar-moodle" target="_blank">aqui</a> para saber mais.';
 $string['settings:healthcheck'] = 'Status de configuração:';
 $string['settings:initialsetupinfo'] = '';
 $string['settings:userlastname'] = 'Integrações';

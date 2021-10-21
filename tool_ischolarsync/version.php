@@ -18,7 +18,6 @@
  * Version file
  *
  * @package   tool_ischolarsync
- * @category  admin tools
  * @copyright 2021, iScholar - Gestão Escolar
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,6 +26,6 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component    = "tool_ischolarsync";    // Tipo_nome.
 $plugin->release      = "1.0.0";                // Versão do plugin em formato legível.
-$plugin->version      = 2021102000;             // Versão do plugin em formato data+contador.
-$plugin->maturity     = MATURITY_ALPHA;         // MATURITY_ALPHA, MATURITY_BETA, MATURITY_RC or MATURITY_STABLE.
-$plugin->requires     = '2013051400';           // Dependências (Moodle 2.5).
+$plugin->version      = 2021102105;             // Versão do plugin em formato data+contador.
+$plugin->maturity     = MATURITY_STABLE;        // MATURITY_ALPHA, MATURITY_BETA, MATURITY_RC or MATURITY_STABLE.
+$plugin->requires     = 2013051400;             // Dependências (Moodle 2.5).

@@ -15,8 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Just define as internal.
+ *
  * @package   tool_ischolarsync
- * @category  admin tools
  * @copyright 2021, iScholar - Gestão Escolar
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

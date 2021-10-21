@@ -18,7 +18,6 @@
  * Provide functions to integrate with an iScholar System.
  *
  * @package   tool_ischolarsync
- * @category  admin tools
  * @copyright 2021, iScholar - Gestão Escolar
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,14 +25,24 @@ namespace tool_ischolarsync;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Class to config the plugin.
+ *
+ * @package    tool_ischolarsync
+ * @copyright  2021, iScholar - Gestão Escolar
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class ischolar {
-    /**
-     * Plugin's constants.
-     */
+    /** Plugin id. */
     const PLUGIN_ID         = 'tool_ischolarsync';
+    /** Service name. */
     const SERVICE_NAME      = 'iScholar Synchronization';
+    /** Service id. */
     const SERVICE_ID        = 'ischolarsync';
+    /** Settings page. */
     const SETTINGS_PAGE     = 'settingsischolarsync';
+
+    /** Functions list. */
     const SERVICE_FUNCTIONS = [
         'core_course_get_categories',           // Mdl v2.3 Return category details (Also used on ischolar::ping).
         'core_user_create_users',               // Mdl v2.0 Create users.
@@ -56,6 +65,7 @@ class ischolar {
         // 'core_group_delete_groups',             // Deletes all specified groups.
     ];
 
+    /** Customfields list. */
     const USER_CUSTOMFIELDS = [
         'ischolar_aluno',
         'ischolar_professor'
@@ -121,7 +131,7 @@ class ischolar {
                     'idnumber'    => 'ischolar',
                     'firstname'   => 'iScholar',
                     'lastname'    => get_string('settings:userlastname', self::PLUGIN_ID),
-                    'email'       => 'walter@ischolar.com.br',
+                    'email'       => 'ischolar@ischolar.com.br',
                     'maildisplay' => 0,
                     'description' => get_string('settings:userdescription', self::PLUGIN_ID),
                 );
@@ -142,7 +152,7 @@ class ischolar {
                     'idnumber'    => 'ischolar',
                     'firstname'   => 'iScholar',
                     'lastname'    => 'Integrações',
-                    'email'       => 'walter@ischolar.com.br',
+                    'email'       => 'ischolar@ischolar.com.br',
                     'maildisplay' => 0,
                     'description' => 'NÃO ALTERE E NÃO REMOVA ESTE USUÁRIO. A alteração ou remoção deste usuário '.
                                         'acarretará no mal funcionamento da integração iScholar.',

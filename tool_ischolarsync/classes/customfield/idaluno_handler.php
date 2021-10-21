@@ -18,7 +18,6 @@
  * Handler for custom fields
  *
  * @package   tool_ischolarsync
- * @category  admin tools
  * @copyright 2021, iScholar - Gestão Escolar
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -34,11 +33,11 @@ use core_customfield\field_controller;
  * id_aluno on iScholar system
  *
  * @package   tool_ischolarsync
- * @category  admin tools
  * @copyright 2021, iScholar - Gestão Escolar
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class idaluno_handler extends \core_customfield\handler {
+    /** @var int id code of a student. */
     static protected $singleton;
 
     /**
