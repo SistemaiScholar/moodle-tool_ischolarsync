@@ -77,7 +77,7 @@ class ischolar {
      *
      * @return object (a collection of settings parameters/values).
      */
-    public static function getsettings(): object {
+    public static function getsettings(): \stdClass {
         $config = get_config(self::PLUGIN_ID);
 
         return $config;
@@ -311,7 +311,12 @@ class ischolar {
                 $data            = new \stdClass();
                 $data->name      = 'iScholar';
                 $data->sortorder = (int) $DB->get_field_sql('SELECT MAX(sortorder) FROM {user_info_category}') + 1;
-                profile_save_category($data);
+
+                if ((int) $CFG->version < 2021051700) {     // Se versão do moodle é abaixo de 3.11.
+                    $DB->insert_record ('user_info_category', $data, false, false);
+                } else {
+                    \profile_save_category($data);
+                }
             }
             $idcategory = $DB->get_record('user_info_category', ['name' => 'iScholar']);
             $idcategory = $idcategory->id;
