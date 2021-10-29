@@ -46,7 +46,7 @@ class idaluno_handler extends \core_customfield\handler {
      * @param int $itemid
      * @return \core_course\customfield\course_handler
      */
-    public static function create(int $itemid = 0) : \core_customfield\handler {
+    public static function create(int $itemid = 0) {
         if (static::$singleton === null) {
             self::$singleton = new static(0);
         }
@@ -58,7 +58,7 @@ class idaluno_handler extends \core_customfield\handler {
      *
      * @return bool true if the current user can configure custom fields, false otherwise.
      */
-    public function can_configure(): bool {
+    public function can_configure() {
         return true;
     }
 
@@ -71,7 +71,7 @@ class idaluno_handler extends \core_customfield\handler {
      * @param int $instanceid id of the instance or 0 if the instance is being created.
      * @return bool true if the current user can edit custom fields, false otherwise.
      */
-    public function can_edit(field_controller $field, int $instanceid=0): bool {
+    public function can_edit(field_controller $field, int $instanceid=0) {
         return true;
     }
 
@@ -85,7 +85,7 @@ class idaluno_handler extends \core_customfield\handler {
      * @param int $instanceid
      * @return bool true if the current user can edit custom fields, false otherwise
      */
-    public function can_view(field_controller $field, int $instanceid) : bool {
+    public function can_view(field_controller $field, int $instanceid) {
         return true;
     }
 }

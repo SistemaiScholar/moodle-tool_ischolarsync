@@ -38,7 +38,7 @@ $string['settings:tokenischolarinfo'] = 'Access token from your iScholar system.
 $string['settings:healthcheck'] = 'Configuration status:';
 $string['settings:initialsetupinfo'] = '';
 $string['settings:userlastname'] = 'Integrations';
-$string['settings:userdescription'] = '<h3 dir="ltr" style="text-align: left;"><strong>DO NOT MODIFY OR DELETE THIS USER!</strong></h3><p dir="ltr" style="text-align: left;">Changing or removing this user will cause <em>iScholar</em> plugins to malfunction.</p>';
+$string['settings:userdescription'] = 'DO NOT MODIFY OR DELETE THIS USER! Changing or removing this user will cause iScholar plugins to malfunction.';
 
 $string['config:pluginenabled'] = 'Plugin activation.';
 $string['config:webservice'] = 'Moodle permission to connect to external systems.';
@@ -60,7 +60,7 @@ $string['config:exception'] = 'Exception.';
 
 $string['configerror:general'] = 'Communication failure to iScholar:';
 $string['configerror:communication'] = 'The iScholar server was unable to communicate with Moodle.';
-$string['configerror:timezone'] = 'Check and adjust the time zone settings as described in this <a target="_blank" href="https://ischolar.com.br">help page</a>.';
+$string['configerror:timezone'] = 'Check and adjust the time zone settings as described in this <a target="_blank" href="https://ajuda.ischolar.com.br/pt-BR/articles/5668326-sincronizacao-ischolar-moodle">help page</a>.';
 $string['configerror:tokeninvalido'] = 'The iScholar Token provided is invalid for this application.';
 $string['configerror:tokenexpirado'] = 'The iScholar Token provided has expired. Access your iScholar to generate a new token.';
 $string['configerror:escoladesconhecida'] = 'The school associated with the iScholar Token is unknown.';

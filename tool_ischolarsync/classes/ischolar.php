@@ -63,6 +63,7 @@ class ischolar {
         'core_group_delete_group_members',      // Deletes group members.
         'core_group_get_course_groups',         // Returns all groups in specified course.
         // 'core_group_delete_groups',             // Deletes all specified groups.
+        'core_user_view_user_profile',          // Simulates the web-interface view of user/view.php and user/profile.php.
     ];
 
     /** Customfields list. */
@@ -77,7 +78,7 @@ class ischolar {
      *
      * @return object (a collection of settings parameters/values).
      */
-    public static function getsettings(): \stdClass {
+    public static function getsettings() {
         $config = get_config(self::PLUGIN_ID);
 
         return $config;
@@ -89,7 +90,7 @@ class ischolar {
      *
      * @return bool true if configuration is ok, false if something fails.
      */
-    public static function setintegration(): bool {
+    public static function setintegration() {
         global $CFG, $DB;
         require_once($CFG->dirroot . '/user/externallib.php');
         require_once($CFG->dirroot . '/user/profile/definelib.php');
@@ -131,10 +132,12 @@ class ischolar {
                     'idnumber'    => 'ischolar',
                     'firstname'   => 'iScholar',
                     'lastname'    => get_string('settings:userlastname', self::PLUGIN_ID),
-                    'email'       => 'ischolar@ischolar.com.br',
-                    'maildisplay' => 0,
+                    'email'       => 'suporte@ischolar.com.br',
                     'description' => get_string('settings:userdescription', self::PLUGIN_ID),
                 );
+                if ($CFG->version >= 2018120300) {   // Se versão do moodle for 3.6 ou posterior.
+                    $user1['maildisplay'] = 0;
+                }
                 $user = \core_user_external::create_users([$user1]);
                 $user = \external_api::clean_returnvalue(\core_user_external::create_users_returns(), $user);
 
@@ -142,7 +145,7 @@ class ischolar {
                 $user1['id']   = $user[0]['id'];
                 $user1['auth'] = 'webservice';
                 $user          = \core_user_external::update_users([$user1]);
-            } else {                                                            // Se usuário já existe, é resetado.
+            } else {    // Se usuário já existe, é resetado.
                 $ischolaruser = \core_user_external::get_users_by_field('username', ['ischolar']);
                 $user1 = array(
                     'id'          => $ischolaruser[0]['id'],
@@ -151,12 +154,13 @@ class ischolar {
                     'password'    => '1Sch0lar@2021',
                     'idnumber'    => 'ischolar',
                     'firstname'   => 'iScholar',
-                    'lastname'    => 'Integrações',
-                    'email'       => 'ischolar@ischolar.com.br',
-                    'maildisplay' => 0,
-                    'description' => 'NÃO ALTERE E NÃO REMOVA ESTE USUÁRIO. A alteração ou remoção deste usuário '.
-                                        'acarretará no mal funcionamento da integração iScholar.',
+                    'lastname'    => get_string('settings:userlastname', self::PLUGIN_ID),
+                    'email'       => 'suporte@ischolar.com.br',
+                    'description' => get_string('settings:userdescription', self::PLUGIN_ID),
                 );
+                if ($CFG->version >= 2018120300) {   // Se versão do moodle for 3.6 ou posterior.
+                    $user1['maildisplay'] = '0';
+                }
                 \core_user_external::update_users([$user1]);
             }
 
@@ -600,16 +604,28 @@ class ischolar {
             $healthyplugin  = 1;
 
             if ($config->enabled == '1') {
-                $html  = '<div style="background-color:#eeeeee; border:solid 1px #8f959e; padding:8px;">';
+                if ($CFG->version < 2016120500) {   // Se versão do moodle é anterior a 3.2.
+                    $html  = '<div style="background-color:#eeeeee; border:solid 1px #8f959e; padding:8px; width:530px;">';
+                } else {
+                    $html  = '<div style="background-color:#eeeeee; border:solid 1px #8f959e; padding:8px;">';
+                }
                 foreach ($results as $i => $result) {
                     $html .= '<p style="display:flex; flex-direction:row; '.
                                 'justify-content:space-between; align-items:center; color:#333;">';
                     $html .= '<span>'.get_string('config:'.$result['desc'], self::PLUGIN_ID).'</span>';
-                    $html .= ($result['status']) ?
-                                '<img style="width:20px; height:20px; margin:0px 10px;" src="'.
-                                    $OUTPUT->image_url('yes', self::PLUGIN_ID).'" />' :
-                                '<img style="width:22px; height:22px; margin:0px 10px;" src="'.
-                                    $OUTPUT->image_url('no', self::PLUGIN_ID).'" />';
+                    if ($CFG->version < 2017051500) {   // Se versão do Moodle for anterior a 3.3.
+                        $html .= ($result['status']) ?
+                            '<img style="width:20px; height:20px; margin:0px 10px;" src="'.
+                                $CFG->wwwroot.'/admin/tool/ischolarsync/pix/yes.png" />' :
+                            '<img style="width:22px; height:22px; margin:0px 10px;" src="'.
+                                $CFG->wwwroot.'/admin/tool/ischolarsync/pix/no.png" />';
+                    } else {
+                        $html .= ($result['status']) ?
+                            '<img style="width:20px; height:20px; margin:0px 10px;" src="'.
+                                $OUTPUT->image_url('yes', self::PLUGIN_ID).'" />' :
+                            '<img style="width:22px; height:22px; margin:0px 10px;" src="'.
+                                $OUTPUT->image_url('no', self::PLUGIN_ID).'" />';
+                    }
                     $html .= '</p>';
 
                     if (isset($result['msg'])) {
@@ -704,7 +720,7 @@ class ischolar {
      * @param mixed $debug Some vabiable or content.
      * @param string $title A description for the variable.
      */
-    public static function debugbox($debug, $title = null): void {
+    public static function debugbox($debug, $title = null) {
         $debug = var_export($debug, true);
         $title = ($title !== null) ?
             "<p style='color:white; background:#333333; margin:0px; padding:5px;'><strong>{$title}</strong></p>" :
