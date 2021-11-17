@@ -73,3 +73,8 @@ $string['customfield:ischolar_professor'] = 'Cód. do professor';
 $string['customfield:ischolar_disciplina'] = 'Cód. da disciplina';
 $string['customfield:ischolar_curso'] = 'Cód. do curso';
 $string['customfield:ischolar_modalidade'] = 'Cód. da modalidade';
+
+$string['privacy:metadata:core_user'] = 'O plugin '.$string['pluginname'].' pode criar ou atualizar contas para alunos e professores';
+$string['privacy:metadata:enrol_manual'] = 'O plugin '.$string['pluginname'].' pode inscrever alunos e professores em cursos';
+$string['privacy:metadata:core_group'] = 'O plugin '.$string['pluginname'].' pode criar um novo grupo ou usar um grupo existente para adicionar todos os membros de uma classe no iScholar';
+
