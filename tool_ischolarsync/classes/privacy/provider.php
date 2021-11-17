@@ -26,6 +26,7 @@ use core_privacy\local\request\approved_userlist;
 use core_privacy\local\request\contextlist;
 use core_privacy\local\request\approved_contextlist;
 use my_userlist_provider;
+use tool_ischolarsync\ischolar;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -79,13 +80,25 @@ class provider implements
         $contextlist = new contextlist();
 
         $contextlist->add_from_sql('
-            SELECT ctx.id
-            FROM {user} usr
-            JOIN {context} ctx ON ctx.instanceid = usr.id AND ctx.contextlevel = :ctxlevel
-            WHERE usr.id = :userid',
+            SELECT id
+            FROM {context}
+            WHERE instanceid = :userid AND contextlevel = :contextuser',
             [
-                ':ctxlevel'  => CONTEXT_USER,
-                ':userid'    => $userid
+                'contextuser'  => CONTEXT_USER,
+                'userid'       => $userid
+            ]
+        );
+
+        $contextlist->add_from_sql('
+            SELECT ctx.id
+            FROM {groups_members} gm
+            JOIN {groups} g ON gm.groupid = g.id
+            JOIN {context} ctx ON g.courseid = ctx.instanceid AND ctx.contextlevel = :contextcourse
+            WHERE gm.userid = :userid AND gm.component = :component',
+            [
+                'contextcourse' => CONTEXT_COURSE,
+                'userid'        => $userid,
+                'component'     => ischolar::PLUGIN_ID
             ]
         );
 
@@ -101,15 +114,9 @@ class provider implements
         if (empty($contextlist)) {
             return;
         }
-        foreach ($contextlist as $context) {
-            if ($context->contextlevel == CONTEXT_COURSE) {
-                \core_group\privacy\provider::export_groups(
-                    $context,
-                    ischolar::PLUGIN_ID,
-                    [get_string('pluginname', ischolar::PLUGIN_ID)]
-                );
-            }
-        }
+
+        \core_user\privacy\provider::export_user_data ($contextlist);
+        \core_group\privacy\provider::export_user_data ($contextlist);
     }
 
     /**
@@ -120,6 +127,9 @@ class provider implements
     public static function delete_data_for_all_users_in_context(\context $context) {
         if (empty($context)) {
             return;
+        }
+        if ($context->contextlevel == CONTEXT_USER) {
+            \core_user\privacy\provider::delete_user_data($context->instanceid, $context);
         }
         if ($context->contextlevel == CONTEXT_COURSE) {
             // Delete all the associated groups.
@@ -136,6 +146,13 @@ class provider implements
         if (empty($contextlist->count())) {
             return;
         }
+        foreach ($contextlist as $context) {
+            // Let's be super certain that we have the right information for this user here.
+            if ($context->contextlevel == CONTEXT_USER && $contextlist->get_user()->id == $context->instanceid) {
+                \core_user\privacy\provider::delete_user_data($contextlist->get_user()->id, $contextlist->current());
+            }
+        }
+
         \core_group\privacy\provider::delete_groups_for_user($contextlist, ischolar::PLUGIN_ID);
     }
 
@@ -151,11 +168,13 @@ class provider implements
     public static function get_users_in_context(userlist $userlist) {
         $context = $userlist->get_context();
 
-        if (!$context instanceof \context_course) {
-            return;
+        if ($context instanceof \context_user) {
+            $userlist->add_user($context->instanceid);
         }
 
-        \core_group\privacy\provider::get_group_members_in_context($userlist, ischolar::PLUGIN_ID);
+        if ($context instanceof \context_course) {
+            \core_group\privacy\provider::get_group_members_in_context($userlist, ischolar::PLUGIN_ID);
+        }
     }
 
     /**
@@ -164,6 +183,14 @@ class provider implements
      * @param   approved_userlist   $userlist   The approved context and user information to delete information for.
      */
     public static function delete_data_for_users(approved_userlist $userlist) {
-        \core_group\privacy\provider::delete_groups_for_users($userlist, ischolar::PLUGIN_ID);
+        $context = $userlist->get_context();
+
+        if ($context instanceof \context_user) {
+            \core_user\privacy\provider::delete_user_data($context->instanceid, $context);
+        }
+
+        if ($context instanceof \context_course) {
+            \core_group\privacy\provider::delete_groups_for_users($userlist, ischolar::PLUGIN_ID);
+        }
     }
 }
