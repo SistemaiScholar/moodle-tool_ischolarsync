@@ -28,4 +28,4 @@ $plugin->component    = "tool_ischolarsync";    // Tipo_nome.
 $plugin->release      = "1.0.0";                // Versão do plugin em formato legível.
 $plugin->version      = 2021111700;             // Versão do plugin em formato data+contador.
 $plugin->maturity     = MATURITY_STABLE;        // MATURITY_ALPHA, MATURITY_BETA, MATURITY_RC or MATURITY_STABLE.
-$plugin->requires     = 2013051400;             // Dependências (Moodle 2.5).
+$plugin->requires     = 2015111600;             // Dependências (Moodle 3.0).
