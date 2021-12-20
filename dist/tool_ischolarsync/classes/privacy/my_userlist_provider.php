@@ -13,19 +13,23 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
- * Version file
+ * Privacy Subsystem implementation for tool_ischolarsync.
  *
- * @package   tool_ischolarsync
- * @copyright 2021, iScholar - Gestão Escolar
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    tool_ischolarsync
+ * @copyright  2021, iScholar - Gestão Escolar
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+namespace tool_ischolarsync\privacy;
+use \core_privacy\local\request\userlist;
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component    = "tool_ischolarsync";    // Type_name.
-$plugin->release      = "1.0.0";                // Plugin version in readable format.
-$plugin->version      = 2021122001;             // Plugin version in date+counter format.
-$plugin->maturity     = MATURITY_STABLE;        // MATURITY_ALPHA, MATURITY_BETA, MATURITY_RC or MATURITY_STABLE.
-$plugin->requires     = 2015111600;             // Dependencies  (Moodle 3.0).
+if (interface_exists('\core_privacy\local\request\userlist')) {
+    interface my_userlist_provider extends \core_privacy\local\request\userlist {
+    }
+} else {                                    // For older versions of moodle.
+    interface my_userlist_provider {
+    }
+}
