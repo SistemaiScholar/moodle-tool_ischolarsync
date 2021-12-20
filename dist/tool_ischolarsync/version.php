@@ -26,6 +26,6 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component    = "tool_ischolarsync";    // Type_name.
 $plugin->release      = "1.0.0";                // Plugin version in readable format.
-$plugin->version      = 2021122002;             // Plugin version in date+counter format.
+$plugin->version      = 2021122003;             // Plugin version in date+counter format.
 $plugin->maturity     = MATURITY_STABLE;        // MATURITY_ALPHA, MATURITY_BETA, MATURITY_RC or MATURITY_STABLE.
 $plugin->requires     = 2015111600;             // Dependencies  (Moodle 3.0).

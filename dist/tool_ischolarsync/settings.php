@@ -89,7 +89,7 @@ if ($hassiteconfig) {
                 ischolar::PLUGIN_ID.'/schoolcode',
                 new lang_string('settings:schoolcode', ischolar::PLUGIN_ID),
                 new lang_string('settings:schoolcodeinfo', ischolar::PLUGIN_ID),
-                '', PARAM_RAW, '80'
+                '', PARAM_RAW, 59
             )
         );
 
