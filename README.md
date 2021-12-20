@@ -144,7 +144,7 @@ Now that you've installed the plugin, you need to configure it to establish a co
 * Back to the Moodle, on the `Site administration` / `Plugins`. Click the `iScholar <> Moodle Synchronization` plugin link to access its settings.<br/>
 ![img-23](https://github.com/SistemaiScholar/moodle-tool_ischolarsync/blob/main/docs/23.png)
 
-* In the plugin settings page that will open (see the figure below), check the `Enabled` option, paste the copied token into the text box of the `Token from iScholar` field and click `Save changes`.<br/>
+* In the plugin settings page that will open (see the figure below), check the `Enabled` option,enter your iScholar `School code`, paste the copied token into the text box of the `Token from iScholar` field and click `Save changes`.<br/>
 ![img-24](https://github.com/SistemaiScholar/moodle-tool_ischolarsync/blob/main/docs/24.png)
 
 By following the above procedure the plugin will automatically configure both Moodle and iScholar systems. To check the configuration status and ensure its correctness, simply access this plugin configuration page again. At the bottom of the page you should see something like the following figure:
