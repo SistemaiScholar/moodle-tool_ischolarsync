@@ -551,11 +551,18 @@ class ischolar {
             //
             // 11. Timezone.
             //
-            $results[11]['desc']    = 'timezone';
-            $moodletz0              = $CFG->timezone;                               // Default moodle timezone.
-            $moodletz1              = $USER->timezone;                              // Moodle user timezone.
-            $ischolartz             = isset($response['dados']['time_zone']) ?
-                                      $response['dados']['time_zone'] : '';         // IScholar Timezone.
+            $results[11]['desc'] = 'timezone';
+
+            // Getting the default moodle timezone.
+            $moodletz0  = $CFG->timezone;
+
+            // Getting the user timezone (99 Timezone is the same of default timezone).
+            $moodletz1  = ($USER->timezone == '99') ?
+                            $moodletz0 : $USER->timezone;
+
+            // Getting the ischolar timezone.
+            $ischolartz = isset($response['dados']['time_zone']) ?
+                            $response['dados']['time_zone'] : '';
 
             if ($moodletz0 == $moodletz1 && $moodletz0 == $ischolartz) {
                 $results[11]['status'] = true;
