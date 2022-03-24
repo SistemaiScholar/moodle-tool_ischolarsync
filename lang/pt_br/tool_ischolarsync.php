@@ -70,6 +70,7 @@ $string['configerror:escolainvalida'] = 'A escola associada ao Token do iScholar
 $string['configerror:integracaodesconhecida'] = 'A integração associada ao Token do iScholar fornecido é desconhecida.';
 $string['configerror:tokennaoencontrado'] = 'Token do iScholar não encontrado.';
 $string['configerror:fixbutton'] = 'Corrigir configurações';
+$string['configerror:passgenerror'] = 'Houve uma falha ao tentar criar uma senha para o usuário de integração.';
 
 $string['customfield:ischolar_aluno'] = 'Cód. do aluno';
 $string['customfield:ischolar_professor'] = 'Cód. do professor';
