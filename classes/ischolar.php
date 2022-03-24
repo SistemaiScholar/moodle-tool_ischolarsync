@@ -134,7 +134,7 @@ class ischolar {
             } else {
                 throw new \Exception("passgenerror");
             }
-self::debugbox($password, 'password');
+
             // If ischolar user does not exist, it will be created.
             if (count($user) == 0) {
                 $user1 = array(
